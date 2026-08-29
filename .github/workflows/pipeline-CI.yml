@@ -1,4 +1,4 @@
-name: pipeline CI
+name: pipeline calculadora - cenario teste unitario reprovado
 
 on:
   push:
@@ -17,11 +17,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-
-      - name: Injetar erro de lint
-        run: |
-          sed -i '/function soma(a, b) {/a\  let resultadoNaoUsado = 999' calculadora.js
-          cat calculadora.js
 
       - name: Rodar ESLint
         run: >
@@ -44,6 +39,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Injetar bug na soma
+        run: |
+          sed -i 's/return a + b;/return a - b;/' calculadora.js
+          cat calculadora.js
 
       - name: Rodar teste de soma
         run: node test_soma.js
@@ -69,7 +69,7 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: Criar script agregador dos testes
+      - name: Criar script agregador
         run: |
           cat > run-all.js << 'EOF'
           require('./test_soma');
