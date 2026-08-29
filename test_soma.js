@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert')
 const { soma } = require('./calculadora');
 
 assert.strictEqual(soma(2, 3), 5, 'Falha: 2 + 3 deveria ser 5');
