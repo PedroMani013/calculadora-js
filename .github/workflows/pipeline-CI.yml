@@ -1,4 +1,4 @@
-name: pipeline calculadora - cenario teste unitario reprovado
+name: pipeline CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 jobs:
 
   lint:
-    name: "Análise de Código (Lint)"
+    name: "Análise de Código"
     runs-on: ubuntu-latest
     steps:
       - name: Baixar código
@@ -40,11 +40,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Injetar bug na soma
-        run: |
-          sed -i 's/return a + b;/return a - b;/' calculadora.js
-          cat calculadora.js
-
       - name: Rodar teste de soma
         run: node test_soma.js
 
@@ -69,7 +64,21 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: Criar script agregador
+      - name: Adicionar função nova
+        run: |
+          cat >> calculadora.js << 'EOF'
+
+          function potencia(base, expoente) {
+            let resultado = 1;
+            for (let i = 0; i < expoente; i++) {
+              resultado *= base;
+            }
+            return resultado;
+          }
+          EOF
+          cat calculadora.js
+
+      - name: Criar script agregador dos testes
         run: |
           cat > run-all.js << 'EOF'
           require('./test_soma');
