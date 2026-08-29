@@ -1,0 +1,34 @@
+name: pipeline calculadora
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    name: Rodar testes
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Rodar teste de soma
+        run: node test_soma.js
+
+      - name: Rodar teste de subtração
+        run: node test_subtr.js
+
+      - name: Rodar teste de multiplicação
+        run: node test_multi.js
+
+      - name: Rodar teste de divisão
+        run: node test_divid.js
