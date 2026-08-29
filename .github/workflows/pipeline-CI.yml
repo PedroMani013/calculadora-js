@@ -1,0 +1,102 @@
+name: pipeline CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  lint:
+    name: "Análise de Código (Lint)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Injetar erro de lint
+        run: |
+          sed -i '/function soma(a, b) {/a\  let resultadoNaoUsado = 999' calculadora.js
+          cat calculadora.js
+
+      - name: Rodar ESLint
+        run: >
+          npx --yes eslint calculadora.js --no-eslintrc
+          --env node,es2021
+          --parser-options=ecmaVersion:12
+          --rule '{"no-unused-vars": "error", "semi": ["error", "always"]}'
+
+  test:
+    name: "Testes Unitários"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Rodar teste de soma
+        run: node test_soma.js
+
+      - name: Rodar teste de subtração
+        run: node test_subtr.js
+
+      - name: Rodar teste de multiplicação
+        run: node test_multi.js
+
+      - name: Rodar teste de divisão
+        run: node test_divid.js
+
+  coverage:
+    name: "Cobertura de Código"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Criar script agregador dos testes
+        run: |
+          cat > run-all.js << 'EOF'
+          require('./test_soma');
+          require('./test_subtr');
+          require('./test_multi');
+          require('./test_divid');
+          console.log('Todos os testes passaram');
+          EOF
+
+      - name: Rodar cobertura
+        run: >
+          npx --yes nyc --reporter=text
+          --check-coverage --lines 80 --functions 80 --branches 80 --statements 80
+          node run-all.js
+
+  security:
+    name: "Análise de Segurança"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Instalar Gitleaks
+        run: |
+          curl -sSL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+
+      - name: Rodar Gitleaks
+        run: gitleaks detect --no-git --source . --verbose

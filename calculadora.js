@@ -1,6 +1,5 @@
 
 function soma(a, b) {
-  let resultadoNaoUsado = 999
   return a + b;
 }
 
