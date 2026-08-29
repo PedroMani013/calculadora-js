@@ -1,4 +1,3 @@
-// test_subtr.js
 const assert = require('assert');
 const { subtracao } = require('./calculadora');
 
